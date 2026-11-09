@@ -1,0 +1,27 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/workspace.xml
+.idea/shelf/
+.idea/httpRequests/
+.vscode/
+
+# Secrets: never commit
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Claude Code: personal settings stay local
+.claude/settings.local.json
+
+# Dependencies / build (each service also has its own .gitignore)
+vendor/
+node_modules/
+var/
+__pycache__/
+.venv/
+coverage/
+
+# php-cs-fixer
+.php-cs-fixer.cache
