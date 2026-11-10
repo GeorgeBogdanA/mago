@@ -1,9 +1,7 @@
 # OS / IDE
 .DS_Store
 Thumbs.db
-.idea/workspace.xml
-.idea/shelf/
-.idea/httpRequests/
+.idea/
 .vscode/
 
 # Secrets: never commit
