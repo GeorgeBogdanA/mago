@@ -12,6 +12,13 @@ the job, designed from day one to be fast and secure. Every service is real, tes
 
 A small marketplace with a catalog, orders and supplier sync.
 
+What a user can do:
+
+- Browse a catalog full of products and place orders.
+- Shop on a store structure similar to Magento: website > store > store view.
+- Buy products in easy, clear, fast and safe steps, with the option to check out as a guest (no registration).
+- Pay and return products safely and simply.
+
 | Service | Stack | Responsibility |
 |---|---|---|
 | `services/symfony-api` | Symfony, Doctrine, Messenger, JWT | Catalog, orders, users (REST `/v1`) |
