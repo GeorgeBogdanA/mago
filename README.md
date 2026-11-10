@@ -51,4 +51,30 @@ every change must pass tests and PHPStan, and once a week I solve an exercise wi
 
 ## Run it
 
-_Coming soon: `docker compose up`._
+Requirements: Docker with Compose v2.
+
+```bash
+cp .env.example .env          # then set real values (see below)
+docker compose up -d --build  # API on http://127.0.0.1:8080
+docker compose ps             # every service must be "healthy"
+```
+
+## Configuration and secrets
+
+No secret is ever committed. All local configuration lives in **one file, `.env` in the repo root**, which is
+git-ignored. `.env.example` is its committed template, with dummy values: copy it and change every `change-me`.
+
+| Variable | Used by | How to set it |
+|---|---|---|
+| `POSTGRES_DB`, `POSTGRES_USER` | PostgreSQL, symfony-api | Any name, e.g. `mago` |
+| `POSTGRES_PASSWORD` | PostgreSQL, symfony-api | `openssl rand -hex 16` (letters and digits only: it goes into a URL) |
+| `APP_SECRET` | symfony-api | `openssl rand -hex 16` |
+| `API_HTTP_PORT` | nginx (host port, bound to 127.0.0.1) | Default `8080` |
+| `UID`, `GID` | PHP container user | `id -u` / `id -g`, so generated files stay yours |
+
+`docker-compose.yml` reads these values and passes them to the containers; it builds `DATABASE_URL` for Symfony.
+If a required value is missing, `docker compose` stops with an error that names it.
+The `.env` files inside `services/symfony-api/` are Symfony's committed defaults: they contain no secrets and no
+`DATABASE_URL`. Never put real values there; use the root `.env`.
+
+When a new service or secret is added, it gets a line in `.env.example` and in this table.

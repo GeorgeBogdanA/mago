@@ -23,3 +23,6 @@ coverage/
 
 # php-cs-fixer
 .php-cs-fixer.cache
+
+# docker compose values (copy .env.example)
+/.env
