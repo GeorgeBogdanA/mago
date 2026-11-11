@@ -16,7 +16,7 @@ with name, price and availability, in a stable order.
 - go-sync price/stock writes (own endpoints or events): separate spec.
 - Any write endpoint (create, update, delete), including enforcing "plain text, no HTML" in `description`.
 - Rate limiting (limits, `429`, headers): separate spec.
-- HTTP caching (ETag, `Cache-Control` other than `no-store`): separate spec.
+- HTTP caching (ETag, `Cache-Control` other than `no-store, private`): separate spec.
 - API-wide concerns: security headers/CSP, OpenAPI document. Separate cross-cutting spec, for all endpoints.
 
 ## API / interface
@@ -66,12 +66,12 @@ with name, price and availability, in a stable order.
 - **Out of range** (valid integer outside min/max): clamped, except `page` above `10000`, which is rejected with `400`
   like malformed input.
 - Empty value (`?limit=`) = param not sent (default). Repeated param (`?limit=5&limit=10`): the last value wins.
-- Response: `200`, `Content-Type: application/json`, `Cache-Control: no-store`,
+- Response: `200`, `Content-Type: application/json`, `Cache-Control: no-store, private`,
   body `{ "items": [...], "meta": { "page", "limit", "total" } }`. `meta.page` and `meta.limit` are the values
   actually used (after defaults and clamping); `total` = number of published products.
 - Order: `created_at` desc, then `id` asc (unique tie-breaker, so pages are stable).
 - `Authorization` header: ignored (public endpoint, never `401`).
-- Error body: RFC 9457, `Content-Type: application/problem+json`, `Cache-Control: no-store`, with `type`, `title`,
+- Error body: RFC 9457, `Content-Type: application/problem+json`, `Cache-Control: no-store, private`, with `type`, `title`,
   `status`, `detail`. For malformed query params and `page` above `10000` `type` and `title` are fixed: `https://mago.example/errors/invalid-query` and
   `Invalid query parameter`; `detail` names every rejected param. One warning is logged per request, naming every
   rejected param.
@@ -82,7 +82,7 @@ Example: `GET /v1/products?page=2&limit=2`
 ```http
 HTTP/1.1 200 OK
 Content-Type: application/json
-Cache-Control: no-store
+Cache-Control: no-store, private
 ```
 ```json
 {
@@ -118,7 +118,7 @@ Example: `GET /v1/products?limit=abc`
 ```http
 HTTP/1.1 400 Bad Request
 Content-Type: application/problem+json
-Cache-Control: no-store
+Cache-Control: no-store, private
 ```
 ```json
 {
@@ -133,7 +133,7 @@ Cache-Control: no-store
 <!-- Products in a Given have different `created_at` values unless stated otherwise. -->
 - [ ] AC1: Given 25 published products,
   when `GET /v1/products`,
-  then `200`, media type `application/json`, `Cache-Control: no-store`, `items` are the 20 newest products
+  then `200`, media type `application/json`, `Cache-Control: no-store, private`, `items` are the 20 newest products
   ordered by `created_at` desc, and `meta` = `{ "page": 1, "limit": 20, "total": 25 }`.
 - [ ] AC2: Given 3 published, 2 draft and 2 archived products,
   when `GET /v1/products`,
@@ -174,7 +174,7 @@ Cache-Control: no-store
 - [ ] AC13: Given 25 published products,
   for each of `limit=abc`, `limit=1.5`, `limit=1e2`, `limit=%2B5`, `limit=%205`, `limit=10abc`, `limit=5%0A`,
   `limit=%D9%A5`, `limit[]=zzz`, `limit=1234567890`, `page=abc`, `page=10001`,
-  then `400`, media type `application/problem+json`, `Cache-Control: no-store`,
+  then `400`, media type `application/problem+json`, `Cache-Control: no-store, private`,
   `type` = `https://mago.example/errors/invalid-query`, `title` = `Invalid query parameter`, `status` = 400,
   `detail` names the param; exactly one warning is logged, whose message and context contain the param name
   and not the raw value (e.g. no `abc`, no `zzz`).
@@ -219,7 +219,7 @@ Cache-Control: no-store
   It matches the list query, so rows are read already in order; checked by hand with `EXPLAIN ANALYZE`
   when the migration is written (no AC).
 - `meta.total` is a `COUNT(*)` on published products (second query per request): acceptable at 10k rows.
-- No HTTP cache in v1: `Cache-Control: no-store` (AC1).
+- No HTTP cache in v1: `Cache-Control: no-store, private` (AC1).
 
 ## Decisions (mine, not the AI's)
 - **One endpoint per client, not one shared endpoint** (2026-11-10). `GET /v1/products` serves the storefront only:
@@ -236,6 +236,8 @@ Cache-Control: no-store
   `limit` is clamped, `page` is rejected (next decision).
 - **One warning per rejected request** (2026-11-10), naming every rejected param: one request = one log line.
 - **`Cache-Control: no-store` on every response of this endpoint** (2026-11-10), `400` included: one rule only.
+  Amended 2026-11-11: the exact header is `no-store, private`. Symfony adds `private` by itself; same meaning,
+  since `no-store` already forbids every cache, so the framework default is kept.
 - **`page` max 10000** (2026-11-10): bounds the `OFFSET` (`400` above, not clamped: a page that far is a client bug).
 - **Lenient on harmless input** (2026-11-10): empty value = default, leading zeros allowed, last repeated value wins
   (PHP's default behaviour).
@@ -266,4 +268,4 @@ Cache-Control: no-store
 ## Done when
 - [x] Tests green (command + output pasted in the PR/commit)
 - [x] PHPStan clean
-- [ ] `reviewer` agent: PASS
+- [x] `reviewer` agent: PASS

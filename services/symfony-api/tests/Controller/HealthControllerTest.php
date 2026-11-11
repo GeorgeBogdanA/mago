@@ -15,7 +15,7 @@ final class HealthControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(200);
         self::assertResponseHeaderSame('Content-Type', 'application/json');
-        self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
+        self::assertResponseHeaderSame('Cache-Control', 'no-store, private');
         self::assertJsonStringEqualsJsonString('{"status":"ok"}', (string) $client->getResponse()->getContent());
     }
 }

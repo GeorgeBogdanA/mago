@@ -34,7 +34,7 @@ final class ProductListControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(200);
         self::assertResponseHeaderSame('Content-Type', 'application/json');
-        self::assertStringContainsString('no-store', (string) $this->client->getResponse()->headers->get('Cache-Control'));
+        self::assertResponseHeaderSame('Cache-Control', 'no-store, private');
         // created_at desc; MG-003 and MG-002 share created_at, so id asc decides (AC1, AC5).
         self::assertSame(['MG-003', 'MG-002', 'MG-001', 'MG-DL-01', 'MG-004'], self::skus($body));
         self::assertSame(['page' => 1, 'limit' => 20, 'total' => 5], $body['meta']);
@@ -174,7 +174,7 @@ final class ProductListControllerTest extends WebTestCase
         $body = $this->getJson('/v1/products?'.$query);
 
         // AC13
-        self::assertInvalidQueryProblem($this->client, $body);
+        self::assertInvalidQueryProblem($body);
         self::assertIsString($body['detail']);
         self::assertStringContainsString('"'.$param.'"', $body['detail']);
 
@@ -207,7 +207,7 @@ final class ProductListControllerTest extends WebTestCase
         $body = $this->getJson('/v1/products?limit=abc&page=abc');
 
         // AC14
-        self::assertInvalidQueryProblem($this->client, $body);
+        self::assertInvalidQueryProblem($body);
         self::assertIsString($body['detail']);
         self::assertStringContainsString('"limit"', $body['detail']);
         self::assertStringContainsString('"page"', $body['detail']);
@@ -250,11 +250,11 @@ final class ProductListControllerTest extends WebTestCase
     /**
      * @param array<mixed> $body
      */
-    private static function assertInvalidQueryProblem(KernelBrowser $client, array $body): void
+    private static function assertInvalidQueryProblem(array $body): void
     {
         self::assertResponseStatusCodeSame(400);
         self::assertResponseHeaderSame('Content-Type', 'application/problem+json');
-        self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
+        self::assertResponseHeaderSame('Cache-Control', 'no-store, private');
         self::assertSame('https://mago.example/errors/invalid-query', $body['type'] ?? null);
         self::assertSame('Invalid query parameter', $body['title'] ?? null);
         self::assertSame(400, $body['status'] ?? null);

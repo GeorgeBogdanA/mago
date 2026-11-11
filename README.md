@@ -59,6 +59,9 @@ docker compose up -d --build  # API on http://127.0.0.1:8080
 docker compose ps             # every service must be "healthy"
 ```
 
+`GET /health` is the liveness check used by Docker: `200 {"status":"ok"}`, `Cache-Control: no-store, private`,
+no database access (the database has its own healthcheck).
+
 ## Configuration and secrets
 
 No secret is ever committed. All local configuration lives in **one file, `.env` in the repo root**, which is
