@@ -1,7 +1,8 @@
 # MaGo
 
 Monorepo, learning project. Read `README.md` for the goal and principles.
-Personal context (plan, status) lives outside the repo in `/mnt/c/LAVORO/### CLAUDE ###/` (STATUS.md): read it at the start, never write secrets there.
+Personal context (plan, status) lives outside the repo in `/mnt/c/LAVORO/### CLAUDE ###/`: read `STATUS.md` at the start, never write secrets there.
+`STATUS.md` stays short (where we are, next step); the history (what was done, when, with what outcome) goes in `LOG.md` in the same folder.
 
 ## Layout
 - `services/symfony-api`: Symfony API (weeks 1-4), the only service that exists for now
@@ -9,15 +10,18 @@ Personal context (plan, status) lives outside the repo in `/mnt/c/LAVORO/### CLA
 
 ## Rules
 - Work from the spec named in the task. If something is not in the spec, ask; do not invent scope.
+- Every feature ships with its tests.
+- A spec has at most 8 acceptance criteria; the rest goes under Deferred.
 - New concepts: use the Learning style and leave `TODO(human)` for real design decisions.
 - Every change must end with a check that passes, shown with command + output (tests, PHPStan).
 - Code, commits, comments and docs in English. Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 - Never commit secrets; config via env vars. All local values live in the git-ignored root `.env`; its template is `.env.example` (dummy values). A new variable goes in `.env.example` and in the README table "Configuration and secrets". `DATABASE_URL` is built by `docker-compose.yml`, never written in a `.env` file.
 
 ## Commands
-<!-- Keep them exact. Tests and PHPStan are filled in when they are installed. -->
-- Tests: _tbd_
-- PHPStan: _tbd_
+<!-- Keep them exact. -->
+- Tests (PHPUnit, `WebTestCase` for endpoints, in `services/symfony-api/tests/`): `docker compose exec api-php php bin/phpunit` → `OK (N tests, M assertions)`
+- PHPStan (level max, config in `services/symfony-api/phpstan.dist.neon`): `docker compose exec api-php vendor/bin/phpstan analyse --memory-limit=512M` → `[OK] No errors`.
+  It reads the dev container from `var/cache/dev/`: if missing, run `docker compose exec api-php php bin/console cache:warmup` first
 - Lint/format: `tools/php-cs-fixer/vendor/bin/php-cs-fixer check` (or `fix`), config in `.php-cs-fixer.dist.php`. A PostToolUse hook (`.claude/hooks/php-cs-fixer.sh`) formats every PHP file Claude edits. After cloning: `composer install -d tools/php-cs-fixer`
 - Docker (from the repo root; first time: `cp .env.example .env` and set real values):
   - Start: `docker compose up -d --build`

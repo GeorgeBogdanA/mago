@@ -14,9 +14,12 @@
 <!-- Endpoint(s), method, request/response examples, status codes, error format. -->
 
 ## Acceptance criteria
-<!-- Each one must be testable. -->
+<!-- Each one must be testable. At most 8: anything more goes under Deferred. -->
 - [ ] AC1:
 - [ ] AC2:
+
+## Deferred
+<!-- Criteria and behaviour left out of this spec (over the 8-AC limit, or not needed yet), one line each with why. -->
 
 ## Edge cases
 
