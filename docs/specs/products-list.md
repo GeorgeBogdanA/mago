@@ -208,7 +208,8 @@ Cache-Control: no-store
 - Malformed input and `page` above `10000` are rejected with `400` and the error body (AC13); other out-of-range
   valid integers are clamped, not errors. Rejected input never causes a redirect and never shows a stack trace.
   (Symfony's own trailing-slash redirect, `/v1/products/` → `/v1/products`, is left as is.)
-- Logs contain the name of a malformed param, never its raw value (no log injection).
+- Logs contain the name of a malformed param, never its raw value (no log injection). Exception, accepted:
+  in dev, Symfony's router logs the request URI (URL-encoded, so no line injection) at `info` level.
 - `page` max `10000`: bounds the `OFFSET`, so one request cannot force a very slow query.
 
 ## Performance
@@ -254,9 +255,15 @@ Cache-Control: no-store
 - **No HTTP cache in v1, proposed by Claude** (2026-11-10): the index already meets the budget at 10k
   products; caching needs a decision on how fast price/stock changes from go-sync must show up, so it gets its own spec.
 - **Errors in RFC 9457 problem+json** (2026-11-10): a standard format, reused by every service (README: one error format everywhere).
+- **Warnings of the `app` channel always written in prod** (2026-11-11, proposed by Claude): Monolog's default
+  `fingers_crossed` handler drops warnings unless an error follows, so the 400 warnings go to stderr (JSON) through
+  their own handler.
+- **Raw URI in the dev log accepted** (2026-11-11): Symfony's router logs it at `info`; dev only, URL-encoded.
+- **AC11 tested when the catalog can be replaced** (2026-11-11): with the temporary fake in-memory data the catalog
+  is never empty; the test comes with the Doctrine entity / injected catalog (week 1, Thursday).
 - **Deferred to their own specs** (2026-11-10): rate limiting, HTTP caching, security headers/CSP, OpenAPI, k6 scenario.
 
 ## Done when
-- [ ] Tests green (command + output pasted in the PR/commit)
-- [ ] PHPStan clean
+- [x] Tests green (command + output pasted in the PR/commit)
+- [x] PHPStan clean
 - [ ] `reviewer` agent: PASS
