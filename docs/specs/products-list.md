@@ -14,6 +14,7 @@ with name, price and availability, in a stable order.
 - Configurable attributes (Magento-style EAV) and website > store > store view: separate specs.
 - Admin list (`/v1/admin/products`, admin-scoped token): separate spec.
 - go-sync price/stock writes (own endpoints or events): separate spec.
+- Multi-currency (exchange rates, prices per market): one ISO 4217 `currency` per product for now.
 - Any write endpoint (create, update, delete), including enforcing "plain text, no HTML" in `description`.
 - Rate limiting (limits, `429`, headers): separate spec.
 - HTTP caching (ETag, `Cache-Control` other than `no-store, private`): separate spec.

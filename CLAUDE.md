@@ -13,6 +13,7 @@ Personal context (plan, status) lives outside the repo in `/mnt/c/LAVORO/### CLA
 - Every feature ships with its tests.
 - A spec has at most 8 acceptance criteria; the rest goes under Deferred.
 - New concepts: use the Learning style and leave `TODO(human)` for real design decisions.
+- Comments written by Bogdan start with `HUMAN:` (e.g. `// HUMAN: ...`). Keep them; never reword or delete them without asking. Claude's comments never use that prefix.
 - Every change must end with a check that passes, shown with command + output (tests, PHPStan).
 - Code, commits, comments and docs in English. Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 - Never commit secrets; config via env vars. All local values live in the git-ignored root `.env`; its template is `.env.example` (dummy values). A new variable goes in `.env.example` and in the README table "Configuration and secrets". `DATABASE_URL` is built by `docker-compose.yml`, never written in a `.env` file.
@@ -20,6 +21,8 @@ Personal context (plan, status) lives outside the repo in `/mnt/c/LAVORO/### CLA
 ## Commands
 <!-- Keep them exact. -->
 - Tests (PHPUnit, `WebTestCase` for endpoints, in `services/symfony-api/tests/`): `docker compose exec api-php php bin/phpunit` → `OK (N tests, M assertions)`
+  Database tests use `mago_test`. First time: `docker compose exec api-php php bin/console --env=test doctrine:database:create --if-not-exists`; after every new migration: `docker compose exec api-php php bin/console --env=test doctrine:migrations:migrate -n`
+- Migrations: `docker compose exec api-php php bin/console doctrine:migrations:diff` (review the file), then `doctrine:migrations:migrate -n`; `doctrine:schema:validate` → `[OK]` for mapping and database
 - PHPStan (level max, config in `services/symfony-api/phpstan.dist.neon`): `docker compose exec api-php vendor/bin/phpstan analyse --memory-limit=512M` → `[OK] No errors`.
   It reads the dev container from `var/cache/dev/`: if missing, run `docker compose exec api-php php bin/console cache:warmup` first
 - Lint/format: `tools/php-cs-fixer/vendor/bin/php-cs-fixer check` (or `fix`), config in `.php-cs-fixer.dist.php`. A PostToolUse hook (`.claude/hooks/php-cs-fixer.sh`) formats every PHP file Claude edits. After cloning: `composer install -d tools/php-cs-fixer`
